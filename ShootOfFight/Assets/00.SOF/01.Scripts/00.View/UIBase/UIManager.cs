@@ -5,15 +5,22 @@ using UnityEngine.UI;
 
 namespace SOF.Scripts.View
 {
+    /// <summary>
+    /// UI 전체를 관리하는 매니저
+    /// 팝업과 버튼을 매핑, 스택을 사용하여 팝업창 관리
+    /// </summary>
     public class UIManager : SingletonLazy<UIManager>
     {
         [HideInInspector]
         public Transform canvasTransform;
 
-        public Dictionary<string, UIPopUp> popUpUIDictionary = new();
-        public Dictionary<Button, string> buttonPopUpMapping = new();
-        public Stack<UIPopUp> currentPopUpUI = new Stack<UIPopUp>();
+        public Dictionary<string, UIPopUp> popUpUIDictionary = new();       // 팝업 이름과 UIPopUp 객체를 매핑하는 Dictionary
+        public Dictionary<Button, string> buttonPopUpMapping = new();       // 버튼과 팝업 이름을 매핑하는 Dictionary
+        public Stack<UIPopUp> currentPopUpUI = new Stack<UIPopUp>();        // 현재 활성화된 팝업을 관리하는 스택
 
+        /// <summary>
+        /// 캔버스 할당, 팝업 찾기 및 등록, 버튼과 팝업 매핑
+        /// </summary>
         private void Awake()
         {
             Debug.Log("UIManager 실행");
@@ -24,6 +31,7 @@ namespace SOF.Scripts.View
             else
                 Debug.Log("성공적으로 할당");
 
+            // UIPopUp을 찾아서 Dictionary에 등록
             UIPopUp[] uIPopUps = canvasTransform.GetComponentsInChildren<UIPopUp>(true);
 
             foreach (var popUp in uIPopUps)
@@ -35,6 +43,7 @@ namespace SOF.Scripts.View
                     Debug.LogWarning($"{popUp.name} <- 이미 존재하는 PopUp UI입니다.");
             }
 
+            // Button을 찾아서 팝업과 매핑
             Button[] uIButtons = canvasTransform.GetComponentsInChildren<Button>();
 
             foreach (var button in uIButtons)
@@ -52,6 +61,9 @@ namespace SOF.Scripts.View
             }
         }
 
+        /// <summary>
+        /// ESC 키 입력 처리
+        /// </summary>
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -63,6 +75,10 @@ namespace SOF.Scripts.View
             }
         }
 
+        /// <summary>
+        /// 버튼 클릭시 호출
+        /// </summary>
+        /// <param name="popUpName"> 팝업 이름 </param>
         public void ShowPopUp(string popUpName)
         {
             if (popUpUIDictionary.TryGetValue(popUpName, out UIPopUp popUp))
@@ -78,6 +94,9 @@ namespace SOF.Scripts.View
                 Debug.LogWarning($"{popUpName} <- 해당 이름의 팝업UI를 찾을 수 없습니다.");
         }
 
+        /// <summary>
+        /// 가장 최근에 열린 팝업을 닫음
+        /// </summary>
         public void HidePopUp()
         {
             if (currentPopUpUI.Count > 0)
@@ -87,6 +106,9 @@ namespace SOF.Scripts.View
             }
         }
 
+        /// <summary>
+        /// 스택에 있는 모든 팝업을 닫음
+        /// </summary>
         public void HideAllPopUp()
         {
             if (currentPopUpUI.Count <= 0)

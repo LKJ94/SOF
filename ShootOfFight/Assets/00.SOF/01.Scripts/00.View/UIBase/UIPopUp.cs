@@ -2,12 +2,16 @@ using UnityEngine;
 
 namespace SOF.Scripts.View
 {
+    /// <summary>
+    /// 팝업 UI 창의 구조를 정함
+    /// </summary>
     public class UIPopUp : MonoBehaviour
     {
-        /* 팝업창에 대한 소리, 애니메이션, 활성화/비활성화 처리 등 */
+        private bool _isActive;     // 활성화 여부
 
-        private bool _isActive;
-
+        /// <summary>
+        /// 팝업 창을 보이게 함
+        /// </summary>
         public virtual void ShowPanel()
         {
             gameObject.SetActive(true);
@@ -15,12 +19,19 @@ namespace SOF.Scripts.View
             _isActive =true;
         }
 
+        /// <summary>
+        /// 팝업 창을 안보이게 함
+        /// </summary>
         public virtual void HidePanel()
         {
             gameObject.SetActive(false);
             _isActive = false;
         }
 
+        /// <summary>
+        /// 외부 클래스나 코드에서 이 팝업이 현재 활성화 되어 있는지 확인할 수 있게 해줌
+        /// </summary>
+        /// <returns> _isActive </returns>
         public bool IsActive()
         {
             return _isActive;
