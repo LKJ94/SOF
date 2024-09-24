@@ -1,6 +1,7 @@
 using SOF.Scripts.Etc;
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,7 @@ namespace SOF.Scripts.View
     /// UI 전체를 관리하는 매니저
     /// 1. 팝업과 버튼을 매핑, 스택을 사용하여 팝업창 관리
     /// 2. InputField 관리
+    /// 3. Button 관리
     /// </summary>
     public class UIManager : SingletonLazy<UIManager>
     {
@@ -18,9 +20,10 @@ namespace SOF.Scripts.View
 
         private Dictionary<string, UIPopup> _popupUIDictionary = new();               // 팝업 이름과 UIPopUp 객체를 매핑하는 Dictionary
         private Dictionary<int, UIScene> _sceneUIDictionary = new();                  // 각 씬 번호에 따라 UIScene을 저장하는 Dictionary
-        private Dictionary<Button, string> _buttonPopupMapping = new();               // 버튼과 팝업 이름을 매핑하는 Dictionary
+        private Dictionary<string, UIButton> _buttonPopupMapping = new();             // 버튼과 팝업 이름을 매핑하는 Dictionary
         private Dictionary<string, Action> _buttonActionMapping = new();              // 버튼과 해당 동작을 매핑하는 Dictionary
         private Dictionary<string, InputField> _inputFieldDictionary = new();         // InputField를 저장할 Dictionary
+        private Dictionary<string, TextMeshProUGUI> _textDictionary = new();          // Text를 저장할 Dictionary
         private Stack<UIPopup> _currentPopupUI = new Stack<UIPopup>();                // 현재 활성화된 팝업을 관리하는 스택
         private UIScene _currentSceneUI;                                              // 현재 활성화된 UIScene
 
@@ -34,7 +37,9 @@ namespace SOF.Scripts.View
             SetupCanvas();
             SetupUIPopup();
             SetupInputField();
-            SetupButtonPopupMappoing();
+            SetupText();
+            SetupUIButtonComponents();
+            SetupButtonPopupMapping();
             SetupButtonActionMapping();
             SetupUIScene();
         }
@@ -106,26 +111,54 @@ namespace SOF.Scripts.View
             }
         }
 
+        private void SetupText()
+        {
+            TextMeshProUGUI[] texts = canvasTransform.GetComponentsInChildren<TextMeshProUGUI>();
+
+            foreach (var text in texts)
+            {
+                Debug.Log($"UIText 발견 : {text.name}");
+                string fieldName = text.gameObject.name;
+                if (!_textDictionary.ContainsKey(fieldName))
+                {
+                    _textDictionary.Add(fieldName, text);
+                    Debug.Log($"Text 등록됨 : {fieldName}");
+                }
+            }
+        }
+
+        private void SetupUIButtonComponents()
+        {
+            Button[] buttons = canvasTransform.GetComponentsInChildren<Button>();
+
+            foreach (var button in buttons)
+            {
+                UIButton uIButton = button.GetComponent<UIButton>();
+                if (uIButton = null)
+                    uIButton = button.gameObject.AddComponent<UIButton>();
+            }
+        }
+
         /// <summary>
         /// 버튼과 팝업 매핑
         /// </summary>
-        private void SetupButtonPopupMappoing()
+        private void SetupButtonPopupMapping()
         {
             // Button을 찾아서 팝업과 매핑
-            Button[] uIButtons = canvasTransform.GetComponentsInChildren<Button>();
+            UIButton[] uIButtons = canvasTransform.GetComponentsInChildren<UIButton>();
 
             foreach (var button in uIButtons)
             {
-                string popUpName = button.gameObject.name.Replace("Button", "PopUp");
-                Debug.Log($"버튼 : {button.gameObject.name} -> 매핑된 팝업 : {popUpName}");
-                if (_popupUIDictionary.ContainsKey(popUpName))
+                string popupName = button.gameObject.name.Replace("Button", "Popup");
+                Debug.Log($"버튼 : {button.gameObject.name} -> 매핑된 팝업 : {popupName}");
+                if (_popupUIDictionary.ContainsKey(popupName))
                 {
-                    _buttonPopupMapping.Add(button, popUpName);
-                    button.onClick.AddListener(() => ShowPopUp(popUpName));
-                    Debug.Log($"{popUpName} 팝업을 {button.gameObject.name} 버튼에 연결");
+                    _buttonPopupMapping.Add(popupName, button);
+                    button.SetPopupName(popupName);
+                    Debug.Log($"{popupName} 팝업을 {button.gameObject.name} 버튼에 연결");
                 }
                 else
-                    Debug.Log($"{popUpName} <- 해당 팝업을 찾을 수 없음");
+                    Debug.Log($"{popupName} <- 해당 팝업을 찾을 수 없음");
             }
         }
 
@@ -135,14 +168,14 @@ namespace SOF.Scripts.View
         private void SetupButtonActionMapping()
         {
             // Button과 해당 동작을 매핑
-            Button[] uIButtonActions = canvasTransform.GetComponentsInChildren<Button>();
+            UIButton[] uIButtonActions = canvasTransform.GetComponentsInChildren<UIButton>();
 
             foreach (var button in uIButtonActions)
             {
                 string actionName = button.gameObject.name;
                 if (_buttonActionMapping.ContainsKey(actionName))
                 {
-                    button.onClick.AddListener(() => _buttonActionMapping[actionName]?.Invoke());
+                    button.SetButtonAction(_buttonActionMapping[actionName]);
                     Debug.Log($"{actionName} 버튼에 동작이 등록되었습니다.");
                 }
                 else
@@ -165,7 +198,7 @@ namespace SOF.Scripts.View
         #endregion
 
         /// <summary>
-        /// 버튼 클릭시 호출
+        /// 버튼 클릭시 팝업 호출
         /// </summary>
         /// <param name="popUpName"> 팝업 이름 </param>
         public void ShowPopUp(string popUpName)
@@ -235,16 +268,17 @@ namespace SOF.Scripts.View
         public void SetInputFieldValue(string fieldName, string value)
         {
             if (_inputFieldDictionary.TryGetValue(fieldName, out InputField inputfield))
-            {
                 inputfield.text = value;
-            }
             else
                 Debug.Log($"{fieldName} 필드를 찾을 수 없음");
         }
 
-        public void SetButtonActions()
+        public void SetTextValue(string fieldName, string value)
         {
-             // 버튼 동작할 것 여기다가 넣으면 됨
+            if (_textDictionary.TryGetValue(fieldName, out TextMeshProUGUI text))
+                text.text = value;
+            else
+                Debug.Log($"{fieldName} Text를 찾을 수 없음");
         }
 
         public void LoadSceneUI(int sceneNumber)
@@ -260,6 +294,11 @@ namespace SOF.Scripts.View
             }
             else
                 Debug.Log($"씬 {sceneNumber}에 맞는 UIScene을 찾을 수 없음");
+        }
+
+        public void SetButtonActions()
+        {
+            // 버튼 동작할 것 여기다가 넣으면 됨
         }
     }
 }

@@ -252,6 +252,7 @@ GameObject:
   - component: {fileID: 239429115}
   - component: {fileID: 239429114}
   - component: {fileID: 239429113}
+  - component: {fileID: 239429116}
   m_Layer: 5
   m_Name: T2_Button
   m_TagString: Untagged
@@ -361,6 +362,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 239429111}
   m_CullTransparentMesh: 1
+--- !u!114 &239429116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239429111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28db19513aa799948ba5c261831a0c95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &762867438
 GameObject:
   m_ObjectHideFlags: 0
@@ -441,7 +454,7 @@ GameObject:
   - component: {fileID: 1391622197}
   - component: {fileID: 1391622196}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: T_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -576,7 +589,7 @@ GameObject:
   - component: {fileID: 1401855155}
   - component: {fileID: 1401855157}
   m_Layer: 5
-  m_Name: T_PopUp
+  m_Name: T_Popup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -663,6 +676,7 @@ GameObject:
   - component: {fileID: 1421291121}
   - component: {fileID: 1421291120}
   - component: {fileID: 1421291119}
+  - component: {fileID: 1421291122}
   m_Layer: 5
   m_Name: T_Button
   m_TagString: Untagged
@@ -772,6 +786,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1421291117}
   m_CullTransparentMesh: 1
+--- !u!114 &1421291122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1421291117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28db19513aa799948ba5c261831a0c95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1498457978
 GameObject:
   m_ObjectHideFlags: 0
@@ -784,7 +810,7 @@ GameObject:
   - component: {fileID: 1498457981}
   - component: {fileID: 1498457980}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: T3_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -919,7 +945,7 @@ GameObject:
   - component: {fileID: 1501410117}
   - component: {fileID: 1501410119}
   m_Layer: 5
-  m_Name: T3_PopUp
+  m_Name: T3_Popup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1006,6 +1032,7 @@ GameObject:
   - component: {fileID: 1572568850}
   - component: {fileID: 1572568849}
   - component: {fileID: 1572568848}
+  - component: {fileID: 1572568851}
   m_Layer: 5
   m_Name: T3_Button
   m_TagString: Untagged
@@ -1115,6 +1142,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1572568846}
   m_CullTransparentMesh: 1
+--- !u!114 &1572568851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572568846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28db19513aa799948ba5c261831a0c95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1663369770
 GameObject:
   m_ObjectHideFlags: 0
@@ -1386,7 +1425,7 @@ GameObject:
   - component: {fileID: 1992373573}
   - component: {fileID: 1992373575}
   m_Layer: 5
-  m_Name: T2_PopUp
+  m_Name: T2_Popup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1473,7 +1512,7 @@ GameObject:
   - component: {fileID: 2075868656}
   - component: {fileID: 2075868655}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: T2_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
