@@ -6,12 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/00.SOF/00.Scenes/Login(T).unity
+    path: Assets/00.SOF/00.Scenes/01.Login(T).unity
     guid: 6ccba3233fef8964780f124b6dead507
   - enabled: 1
-    path: Assets/00.SOF/00.Scenes/Loading(T).unity
+    path: Assets/00.SOF/00.Scenes/02.Loading(T).unity
     guid: 7559482d46eeb8b4282e42591208c384
   - enabled: 1
-    path: Assets/00.SOF/00.Scenes/Loby(T).unity
+    path: Assets/00.SOF/00.Scenes/03.Loby(T).unity
     guid: 39c0efc8737308240b977dd801e2d863
   m_configObjects: {}

@@ -1,6 +1,8 @@
 using SOF.Scripts.Etc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -111,6 +113,9 @@ namespace SOF.Scripts.View
             }
         }
 
+        /// <summary>
+        /// Text 설정
+        /// </summary>
         private void SetupText()
         {
             TextMeshProUGUI[] texts = canvasTransform.GetComponentsInChildren<TextMeshProUGUI>();
@@ -127,6 +132,9 @@ namespace SOF.Scripts.View
             }
         }
 
+        /// <summary>
+        /// Button 컴포넌트 추가
+        /// </summary>
         private void SetupUIButtonComponents()
         {
             Button[] buttons = canvasTransform.GetComponentsInChildren<Button>();
@@ -134,7 +142,7 @@ namespace SOF.Scripts.View
             foreach (var button in buttons)
             {
                 UIButton uIButton = button.GetComponent<UIButton>();
-                if (uIButton = null)
+                if (uIButton == null)
                     uIButton = button.gameObject.AddComponent<UIButton>();
             }
         }
@@ -167,19 +175,47 @@ namespace SOF.Scripts.View
         /// </summary>
         private void SetupButtonActionMapping()
         {
+            string targetNamespace = "SOF.Scripts.View";
+            MonoBehaviour[] monoBehaviours = FindObjectsOfType<MonoBehaviour>()
+                .Where(m => m.GetType().Namespace == targetNamespace)
+                .ToArray();
+
+            foreach (var monoBehaviour in monoBehaviours)
+            {
+                Type type = monoBehaviour.GetType();
+                MethodInfo[] methods =type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                foreach (var method in methods)
+                {
+                    if (method.Name.StartsWith("On") && method.Name.EndsWith("Click") && method.GetParameters().Length == 0)
+                    {
+                        string buttonName = method.Name.Substring(2, method.Name.Length - 2 - 5);
+
+                        if (!_buttonActionMapping.ContainsKey(buttonName))
+                        {
+                            Action action = () => method.Invoke(monoBehaviour, null);
+                            _buttonActionMapping.Add(buttonName, action);
+                            Debug.Log($"메서드 {method.Name}가 버튼 {buttonName}에 연결됨");
+                        }
+                        else
+                            Debug.Log($"버튼 {buttonName}이 이미 연결됨.");
+                    }
+                }
+            }
+
             // Button과 해당 동작을 매핑
             UIButton[] uIButtonActions = canvasTransform.GetComponentsInChildren<UIButton>();
 
             foreach (var button in uIButtonActions)
             {
-                string actionName = button.gameObject.name;
-                if (_buttonActionMapping.ContainsKey(actionName))
+                string buttonName = button.gameObject.name;
+                if (_buttonActionMapping.ContainsKey(buttonName))
                 {
-                    button.SetButtonAction(_buttonActionMapping[actionName]);
-                    Debug.Log($"{actionName} 버튼에 동작이 등록되었습니다.");
+                    button.SetButtonAction(_buttonActionMapping[buttonName]);
+                    Debug.Log($"{buttonName} 버튼에 동작이 등록되었습니다.");
                 }
                 else
-                    Debug.Log($"{actionName}에 대한 동작이 등록되지 않았습니다.");
+                    Debug.Log($"{buttonName}에 대한 동작이 등록되지 않았습니다.");
             }
         }
 
@@ -273,6 +309,11 @@ namespace SOF.Scripts.View
                 Debug.Log($"{fieldName} 필드를 찾을 수 없음");
         }
 
+        /// <summary>
+        /// Text의 값을 설정
+        /// </summary>
+        /// <param name="fieldName"> Text 이름 </param>
+        /// <param name="value"> 값 </param>
         public void SetTextValue(string fieldName, string value)
         {
             if (_textDictionary.TryGetValue(fieldName, out TextMeshProUGUI text))
@@ -281,6 +322,10 @@ namespace SOF.Scripts.View
                 Debug.Log($"{fieldName} Text를 찾을 수 없음");
         }
 
+        /// <summary>
+        /// 씬 로드될 때 UI 호출
+        /// </summary>
+        /// <param name="sceneNumber"> 씬 번호 </param>
         public void LoadSceneUI(int sceneNumber)
         {
             if (_currentSceneUI != null)
@@ -294,11 +339,6 @@ namespace SOF.Scripts.View
             }
             else
                 Debug.Log($"씬 {sceneNumber}에 맞는 UIScene을 찾을 수 없음");
-        }
-
-        public void SetButtonActions()
-        {
-            // 버튼 동작할 것 여기다가 넣으면 됨
         }
     }
 }
