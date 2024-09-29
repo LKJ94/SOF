@@ -1,8 +1,9 @@
+using SOF.Scripts.Presenter.Auth;
 using UnityEngine;
 
 namespace SOF.Scripts.View
 {
-    public class OnRegisterButton : MonoBehaviour
+    public class OnAuthButton : MonoBehaviour
     {
         public void OnRegisterButtonClick()
         {
@@ -50,7 +51,7 @@ namespace SOF.Scripts.View
             }
             #endregion
 
-            //RegisterUser(email, password, username);
+            Authentication.Instance.RegisterUser(email, password, username);
         }
 
         private bool IsValidEmail(string email)

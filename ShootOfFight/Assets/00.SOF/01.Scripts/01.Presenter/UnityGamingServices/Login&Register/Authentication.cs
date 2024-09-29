@@ -1,3 +1,4 @@
+using SOF.Scripts.Etc;
 using SOF.Scripts.View;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
@@ -5,8 +6,14 @@ using UnityEngine;
 
 namespace SOF.Scripts.Presenter.Auth
 {
-    public class Authentication : MonoBehaviour
+    public class Authentication : SingletonLazy<Authentication>
     {
+        /// <summary>
+        /// 회원가입
+        /// </summary>
+        /// <param name="email"> 이메일 </param>
+        /// <param name="password"> 비밀번호 </param>
+        /// <param name="username"> 닉네임 </param>
         public async void RegisterUser(string email, string password, string username)
         {
             try
@@ -29,6 +36,19 @@ namespace SOF.Scripts.Presenter.Auth
             catch (RequestFailedException e)
             {
                 UIManager.Instance.SetTextValue("ErrorText", $"오류가 발생했습니다 : {e.Message}");
+            }
+        }
+
+        public async void LoginUser(string email, string password)
+        {
+            try
+            {
+                await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(email, password);
+                Debug.Log($"로그인 성공 : {email}, {password}");
+            }
+            catch
+            {
+
             }
         }
     }
