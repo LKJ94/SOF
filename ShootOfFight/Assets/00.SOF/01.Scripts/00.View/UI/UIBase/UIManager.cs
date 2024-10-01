@@ -7,6 +7,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// 명명 규칙 요약
+//버튼	    {Prefix}_{Action}Button 
+//팝업	    {Prefix}_{Action}Popup 
+//스크립트	On{Prefix}Button 
+//메서드	    On{ButtonName}Click 
 namespace SOF.Scripts.View
 {
     /// <summary>
@@ -28,6 +33,7 @@ namespace SOF.Scripts.View
         private Dictionary<string, TextMeshProUGUI> _textDictionary = new();          // Text를 저장할 Dictionary
         private Stack<UIPopup> _currentPopupUI = new Stack<UIPopup>();                // 현재 활성화된 팝업을 관리하는 스택
         private UIScene _currentSceneUI;                                              // 현재 활성화된 UIScene
+        private Dictionary<string, Type> prefixToScriptMapping = new();               // 접두사와 스크립트 타입을 매핑
 
         /// <summary>
         /// 캔버스 할당, 팝업 찾기 및 등록, 버튼과 팝업 매핑, UI와 씬 연결
@@ -137,14 +143,69 @@ namespace SOF.Scripts.View
         /// </summary>
         private void SetupUIButtonComponents()
         {
+            SetupPrefixToScriptMapping();
+
             Button[] buttons = canvasTransform.GetComponentsInChildren<Button>();
 
             foreach (var button in buttons)
             {
-                UIButton uIButton = button.GetComponent<UIButton>();
-                if (uIButton == null)
-                    uIButton = button.gameObject.AddComponent<UIButton>();
+                string buttonName = button.gameObject.name;
+                bool matched = false;
+
+                foreach (var prefix in prefixToScriptMapping.Keys)
+                {
+                    if (buttonName.StartsWith(prefix))
+                    {
+                        Type scriptType = prefixToScriptMapping[prefix];
+
+                        if (button.GetComponent(scriptType) == null)
+                        {
+                            button.gameObject.AddComponent(scriptType);
+                            Debug.Log($"{scriptType.Name}가 {buttonName}에 할당됨");
+                        }
+
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (!matched)
+                {
+                    UIButton uIButton = button.GetComponent<UIButton>();
+                    if (uIButton == null)
+                    {
+                        uIButton = button.gameObject.AddComponent<UIButton>();
+                        Debug.Log($"UIButton이 {buttonName}에 할당됨");
+                    }
+                }
             }
+        }
+
+        private void SetupPrefixToScriptMapping()
+        {
+            var buttonTypes = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => t.IsSubclassOf(typeof(UIButton)) && t != typeof(UIButton));
+
+            foreach (var type in buttonTypes)
+            {
+                string scriptName = type.Name;
+                if (scriptName.StartsWith("On") && scriptName.EndsWith("Button"))
+                {
+                    string prefix = scriptName.Substring(2, scriptName.Length - 2 - 6) + "_";
+                    if (!prefixToScriptMapping.ContainsKey(prefix))
+                    {
+                        prefixToScriptMapping.Add(prefix, type);
+                        Debug.Log($"매핑 추가 : {prefix} -> {type.Name}");
+                    }
+                    else
+                        Debug.Log($"접두사 {prefix}는 이미 매핑되어 있음");
+                }
+                else
+                    Debug.Log($"스크립트 명명 규칙을 따르지 않았음 -> {scriptName}");
+            }
+
+            foreach (var mapping in prefixToScriptMapping)
+                Debug.Log($"매핑 : {mapping.Key} -> {mapping.Value.Name}");
         }
 
         /// <summary>

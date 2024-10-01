@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SOF.Scripts.View
 {
-    public class OnAuthButton : MonoBehaviour
+    public class OnAuthButton : UIButton
     {
         public void OnRegisterButtonClick()
         {
@@ -52,6 +52,16 @@ namespace SOF.Scripts.View
             #endregion
 
             Authentication.Instance.RegisterUser(email, password, username);
+        }
+
+        public void OnLoginButtonClick()
+        {
+
+        }
+
+        public void OnLogoutButtonClick()
+        {
+
         }
 
         private bool IsValidEmail(string email)

@@ -46,9 +46,12 @@ namespace SOF.Scripts.Presenter.Auth
                 await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(email, password);
                 Debug.Log($"로그인 성공 : {email}, {password}");
             }
-            catch
+            catch (AuthenticationException e)
             {
-
+                if (e.Message.Contains("invalid-email"))
+                    UIManager.Instance.SetTextValue("ErrorText", "유효하지 않은 이메일");
+                else if (e.Message.Contains("wrong-password"))
+                    UIManager.Instance.SetTextValue("ErrorText", "비밀번호가 틀림");
             }
         }
     }
