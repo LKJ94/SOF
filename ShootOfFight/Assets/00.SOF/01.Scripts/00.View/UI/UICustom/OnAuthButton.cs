@@ -5,15 +5,14 @@ namespace SOF.Scripts.View
 {
     public class OnAuthButton : UIButton
     {
-        public void OnRegisterButtonClick()
+        public async void OnRegisterButtonClick()
         {
             string email = UIManager.Instance.GetInputFieldValue("EmailInputField");
             string username = UIManager.Instance.GetInputFieldValue("Username");
             string password = UIManager.Instance.GetInputFieldValue("Password");
             string passwordCheck = UIManager.Instance.GetInputFieldValue("PasswordCheck");
 
-            #region 예외 처리
-            /* 예외 처리 */
+            #region 입력값 예외 처리
             if (string.IsNullOrEmpty(email))                                                    // 이메일 빈칸
             {
                 UIManager.Instance.SetTextValue("ErrorText", "이메일을 입력해주세요.");
@@ -51,12 +50,35 @@ namespace SOF.Scripts.View
             }
             #endregion
 
-            Authentication.Instance.RegisterUser(email, password, username);
+            await Authentication.Instance.RegisterUser(email, password, username);
         }
 
-        public void OnLoginButtonClick()
+        public async void OnLoginButtonClick()
         {
+            string email = UIManager.Instance.GetInputFieldValue("EmailInputField");
+            string password = UIManager.Instance.GetInputFieldValue("Password");
 
+            #region 입력값 예외 처리
+            if (string.IsNullOrEmpty(email))                                                    // 이메일 빈칸
+            {
+                UIManager.Instance.SetTextValue("ErrorText", "이메일을 입력해주세요.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(password))                                                 // 비밀번호 빈칸
+            {
+                UIManager.Instance.SetTextValue("ErrorText", "비밀번호를 입력해주세요.");
+                return;
+            }
+
+            if (!IsValidEmail(email))                                                           // 이메일 유효성 검사
+            {
+                UIManager.Instance.SetTextValue("ErrorText", "유효한 이메일 형식을 입력해주세요.");
+                return;
+            }
+            #endregion
+
+            await Authentication.Instance.LoginUser(email, password);
         }
 
         public void OnLogoutButtonClick()
