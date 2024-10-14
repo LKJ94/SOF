@@ -1,4 +1,4 @@
-using SOF.Scripts.Presenter.Auth;
+using SOF.Scripts.Presenter.UGS;
 using UnityEngine;
 
 namespace SOF.Scripts.View
