@@ -11,6 +11,7 @@ namespace SOF.Scripts.Presenter
     {
         private int _retryCount = 5;
         private float _retryDelay = 2f;
+
         void Awake()
         {
             InitializeUGS();
