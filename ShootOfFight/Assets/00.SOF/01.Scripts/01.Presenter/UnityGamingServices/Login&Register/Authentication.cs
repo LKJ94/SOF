@@ -28,7 +28,7 @@ namespace SOF.Scripts.Presenter.UGS
                 return "알 수 없는 오류가 발생했습니다. 다시 시도해 주세요.";
         }
 
-        public async Task RegisterUser(string id, string password)
+        public async Task SignUpUser(string id, string password)
         {
             try
             {
@@ -45,7 +45,7 @@ namespace SOF.Scripts.Presenter.UGS
             }
         }
 
-        public async Task LoginUser(string id, string password)
+        public async Task SignInUser(string id, string password)
         {
             try
             {
@@ -60,7 +60,7 @@ namespace SOF.Scripts.Presenter.UGS
             }
         }
 
-        public void LogoutUser()
+        public void SignOutUser()
         {
             try
             {

@@ -5,7 +5,7 @@ namespace SOF.Scripts.View
     /// <summary>
     /// 팝업 UI 창의 구조를 정함
     /// </summary>
-    public class UIPopup : MonoBehaviour
+    public class UIPopUp : MonoBehaviour
     {
         private bool _isActive;     // 활성화 여부
 
