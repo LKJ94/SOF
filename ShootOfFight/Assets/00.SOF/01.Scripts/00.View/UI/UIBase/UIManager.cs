@@ -35,7 +35,6 @@ namespace SOF.Scripts.View
         private Stack<UIPopUp> _currentPopupUI = new();                               // 현재 활성화된 팝업을 관리하는 스택
         private UIScene _currentSceneUI;                                              // 현재 활성화된 UIScene
         private Dictionary<string, Type> _buttonPrefixToScriptMapping = new();        // 접두사와 스크립트 타입을 매핑(버튼)
-        private Dictionary<string, Type> _popupPrefixToScriptMapping = new();         // 접두사와 스크립트 타입을 매핑(팝업)
 
         /// <summary>
         /// 캔버스 할당, 팝업 찾기 및 등록, 버튼과 팝업 매핑, UI와 씬 연결
@@ -47,10 +46,9 @@ namespace SOF.Scripts.View
             SetUpCanvas();
             SetUpUIPopUp();
             SetUpInputField();
-            SetUpText();
+            //SetUpText();
             SetUpUIScene();
             SetUpUIButtonComponent();
-            SetUpUIPopUpComponent();
             SetUpButtonPopupMapping();
             SetUpButtonActionMapping();
         }
@@ -102,7 +100,7 @@ namespace SOF.Scripts.View
             {
                 GameObject obj = child.gameObject;
 
-                if (obj == popupsParent.gameObject)
+                if (!obj.name.EndsWith("PopUp"))
                     continue;
 
                 string popupName = obj.name;
@@ -142,67 +140,24 @@ namespace SOF.Scripts.View
             }
         }
 
-        /// <summary>
-        /// Text 설정
-        /// </summary>
-        private void SetUpText()
-        {
-            TextMeshProUGUI[] texts = canvasTransform.GetComponentsInChildren<TextMeshProUGUI>();
+        ///// <summary>
+        ///// Text 설정
+        ///// </summary>
+        //private void SetUpText()
+        //{
+        //    TextMeshProUGUI[] texts = canvasTransform.GetComponentsInChildren<TextMeshProUGUI>();
 
-            foreach (var text in texts)
-            {
-                Debug.Log($"UIText 발견 : {text.name}");
-                string fieldName = text.gameObject.name;
-                if (!_textDictionary.ContainsKey(fieldName))
-                {
-                    _textDictionary.Add(fieldName, text);
-                    Debug.Log($"Text 등록됨 : {fieldName}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// PopUp에 Custom 스크립트 추가
-        /// </summary>
-        private void SetUpUIPopUpComponent()
-        {
-            SetUpPopUpPrefixToScriptMapping();
-
-            UIPopUp[] popups = canvasTransform.GetComponentsInChildren<UIPopUp>();
-
-            foreach (var popup in popups)
-            {
-                string popupName = popup.gameObject.name;
-                bool matched = false;
-
-                foreach (var prefix in _popupPrefixToScriptMapping.Keys)
-                {
-                    if (popupName.StartsWith(prefix))
-                    {
-                        Type scriptType = _popupPrefixToScriptMapping[prefix];
-
-                        if (popup.GetComponent(scriptType) == null)
-                        {
-                            popup.gameObject.AddComponent(scriptType);
-                            Debug.Log($"{scriptType.Name}가 {popupName}에 할당됨");
-                        }
-
-                        matched = true;
-                        break;
-                    }
-                }
-
-                if (!matched)
-                {
-                    UIPopUp uIPopup = popup.GetComponent<UIPopUp>();
-                    if (uIPopup == null)
-                    {
-                        uIPopup = popup.gameObject.AddComponent<UIPopUp>();
-                        Debug.Log($"UIPopUp이 {popupName}에 할당됨");
-                    }
-                }
-            }
-        }
+        //    foreach (var text in texts)
+        //    {
+        //        Debug.Log($"UIText 발견 : {text.name}");
+        //        string fieldName = text.gameObject.name;
+        //        if (!_textDictionary.ContainsKey(fieldName))
+        //        {
+        //            _textDictionary.Add(fieldName, text);
+        //            Debug.Log($"Text 등록됨 : {fieldName}");
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Button에 Custom 스크립트 추가
@@ -211,7 +166,7 @@ namespace SOF.Scripts.View
         {
             SetUpButtonPrefixToScriptMapping();
 
-            Button[] buttons = canvasTransform.GetComponentsInChildren<Button>();
+            Button[] buttons = canvasTransform.GetComponentsInChildren<Button>(true);
 
             foreach (var button in buttons)
             {
@@ -241,37 +196,14 @@ namespace SOF.Scripts.View
                     if (uIButton == null)
                     {
                         uIButton = button.gameObject.AddComponent<UIButton>();
-                        Debug.Log($"UIButton이 {buttonName}에 할당됨");
-                    }
-                }
-            }
-        }
-
-        private void SetUpPopUpPrefixToScriptMapping()
-        {
-            var popupTypes = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => t.IsSubclassOf(typeof(UIPopUp)) && t != typeof(UIPopUp));
-
-            foreach (var type in popupTypes)
-            {
-                string scriptName = type.Name;
-                if (scriptName.StartsWith("On") && scriptName.EndsWith("PopUp"))
-                {
-                    string prefix = scriptName.Substring(2, scriptName.Length - 2 - 5) + "_";
-                    if (!_popupPrefixToScriptMapping.ContainsKey(prefix))
-                    {
-                        _popupPrefixToScriptMapping.Add(prefix, type);
-                        Debug.Log($"매핑 추가 : {prefix} -> {type.Name}");
+                        Debug.Log($"UIButton이 {buttonName}에 할당됨 **{uIButton}");
                     }
                     else
-                        Debug.Log($"접두사 {prefix}는 이미 매핑되어 있음");
+                    {
+                        Debug.LogError($"UIButton은 이미 {buttonName}에 존재함");
+                    }
                 }
-                else
-                    Debug.Log($"스크립트 명명 규칙을 따르지 않았음 -> {scriptName}");
             }
-
-            foreach (var mapping in _popupPrefixToScriptMapping)
-                Debug.Log($"매핑 : {mapping.Key} -> {mapping.Value.Name}");
         }
 
         /// <summary>
@@ -288,13 +220,17 @@ namespace SOF.Scripts.View
                 if (scriptName.StartsWith("On") && scriptName.EndsWith("Button"))
                 {
                     string prefix = scriptName.Substring(2, scriptName.Length - 2 - 6) + "_";
-                    if (!_buttonPrefixToScriptMapping.ContainsKey(prefix))
+
+                    if (prefix.StartsWith("Action_"))
                     {
-                        _buttonPrefixToScriptMapping.Add(prefix, type);
-                        Debug.Log($"매핑 추가 : {prefix} -> {type.Name}");
+                        if (!_buttonPrefixToScriptMapping.ContainsKey(prefix))
+                        {
+                            _buttonPrefixToScriptMapping.Add(prefix, type);
+                            Debug.Log($"매핑 추가 : {prefix} -> {type.Name}");
+                        }
+                        else
+                            Debug.Log($"접두사 {prefix}는 이미 매핑되어 있음");
                     }
-                    else
-                        Debug.Log($"접두사 {prefix}는 이미 매핑되어 있음");
                 }
                 else
                     Debug.Log($"스크립트 명명 규칙을 따르지 않았음 -> {scriptName}");
@@ -314,7 +250,13 @@ namespace SOF.Scripts.View
 
             foreach (var button in uIButtons)
             {
-                string popupName = button.gameObject.name.Replace("Button", "PopUp");
+                string popupName = button.gameObject.name;
+
+                if (popupName.StartsWith("PopUp_"))
+                    popupName = popupName.Replace("PopUp_", "");
+
+                popupName = popupName.Replace("Button", "PopUp");
+
                 Debug.Log($"버튼 : {button.gameObject.name} -> 매핑된 팝업 : {popupName}");
                 if (_popupUIDictionary.ContainsKey(popupName))
                 {
@@ -347,7 +289,6 @@ namespace SOF.Scripts.View
                     if (method.Name.StartsWith("On") && method.Name.EndsWith("Click") && method.GetParameters().Length == 0)
                     {
                         string buttonName = method.Name.Substring(2, method.Name.Length - 2 - 5);
-
                         if (!_buttonActionMapping.ContainsKey(buttonName))
                         {
                             Action action = () => method.Invoke(monoBehaviour, null);
@@ -356,6 +297,7 @@ namespace SOF.Scripts.View
                         }
                         else
                             Debug.Log($"버튼 {buttonName}이 이미 연결됨.");
+
                     }
                 }
             }
@@ -366,6 +308,7 @@ namespace SOF.Scripts.View
             foreach (var button in uIButtonActions)
             {
                 string buttonName = button.gameObject.name;
+
                 if (_buttonActionMapping.ContainsKey(buttonName))
                 {
                     button.SetButtonAction(_buttonActionMapping[buttonName]);

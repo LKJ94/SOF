@@ -253,7 +253,7 @@ GameObject:
   - component: {fileID: 239429114}
   - component: {fileID: 239429113}
   m_Layer: 5
-  m_Name: T2_Button
+  m_Name: Action_T2_Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -689,7 +689,7 @@ GameObject:
   - component: {fileID: 1421291120}
   - component: {fileID: 1421291119}
   m_Layer: 5
-  m_Name: T_Button
+  m_Name: PopUp_T_Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1019,7 +1019,7 @@ GameObject:
   - component: {fileID: 1572568849}
   - component: {fileID: 1572568848}
   m_Layer: 5
-  m_Name: T3_Button
+  m_Name: PopUp_T3_Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
