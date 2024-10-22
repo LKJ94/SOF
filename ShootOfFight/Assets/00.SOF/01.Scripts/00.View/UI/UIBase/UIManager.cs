@@ -12,7 +12,7 @@ using UnityEngine.UI;
 /// 버튼	    {Prefix}_{Action}Button 
 /// 팝업	    {Prefix}_{Action}Popup 
 /// 스크립트	On{Prefix}Button 
-/// 메서드	    On{ButtonName}Click 
+/// 메서드	On{ButtonName}Click 
 namespace SOF.Scripts.View
 {
     /// <summary>
@@ -48,11 +48,11 @@ namespace SOF.Scripts.View
             SetUpUIPopUp();
             SetUpInputField();
             SetUpText();
+            SetUpUIScene();
             SetUpUIButtonComponent();
             SetUpUIPopUpComponent();
             SetUpButtonPopupMapping();
             SetUpButtonActionMapping();
-            SetUpUIScene();
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace SOF.Scripts.View
                         Debug.Log($"접두사 {prefix}는 이미 매핑되어 있음");
                 }
                 else
-                    Debug.Log($"스크립트 명명 규칙을 따르지 않앗음 -> {scriptName}");
+                    Debug.Log($"스크립트 명명 규칙을 따르지 않았음 -> {scriptName}");
             }
 
             foreach (var mapping in _popupPrefixToScriptMapping)

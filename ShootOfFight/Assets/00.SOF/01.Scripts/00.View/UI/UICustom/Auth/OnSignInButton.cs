@@ -6,8 +6,8 @@ namespace SOF.Scripts.View
     {
         public async void OnSignInButtonClick()
         {
-            string id = UIManager.Instance.GetInputFieldValue("IDInputField");
-            string password = UIManager.Instance.GetInputFieldValue("Password");
+            string id = UIManager.Instance.GetInputFieldValue("ID_InputField");
+            string password = UIManager.Instance.GetInputFieldValue("Password_InputField");
 
             #region 입력값 예외 처리
             if (string.IsNullOrEmpty(id))                                                    // 아이디 빈칸
