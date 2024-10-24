@@ -797,7 +797,7 @@ GameObject:
   - component: {fileID: 312711327}
   - component: {fileID: 312711326}
   m_Layer: 5
-  m_Name: ID_InputField
+  m_Name: User_InputField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1106,7 +1106,7 @@ GameObject:
   - component: {fileID: 374997559}
   - component: {fileID: 374997558}
   m_Layer: 5
-  m_Name: Action_SignUp_Button
+  m_Name: SignUpButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1382,7 +1382,7 @@ GameObject:
   - component: {fileID: 395091788}
   - component: {fileID: 395091787}
   m_Layer: 5
-  m_Name: Action_SignIn_Button
+  m_Name: SignInButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2244,7 +2244,7 @@ GameObject:
   - component: {fileID: 1056801786}
   - component: {fileID: 1056801785}
   m_Layer: 5
-  m_Name: SignUp_PopUp
+  m_Name: RegisterPopUp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3243,7 +3243,7 @@ GameObject:
   - component: {fileID: 1796238781}
   - component: {fileID: 1796238780}
   m_Layer: 5
-  m_Name: PopUp_SignUp_Button
+  m_Name: RegisterButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3498,7 +3498,7 @@ GameObject:
   - component: {fileID: 1817753724}
   - component: {fileID: 1817753723}
   m_Layer: 5
-  m_Name: Action_Close_Button
+  m_Name: CloseButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

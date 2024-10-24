@@ -1,60 +1,47 @@
-using SOF.Scripts.Etc;
+ï»¿using SOF.Scripts.Etc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
-/// ¸ÅÇÎ UI ¸í¸í ±ÔÄ¢ ¿ä¾à
-/// ¹öÆ°	    {Prefix}_{Action}Button 
-/// ÆË¾÷	    {Prefix}_{Action}Popup 
-/// ½ºÅ©¸³Æ®	On{Prefix}Button 
-/// ¸Ş¼­µå	On{ButtonName}Click 
 namespace SOF.Scripts.View
 {
     /// <summary>
-    /// UI ÀüÃ¼¸¦ °ü¸®ÇÏ´Â ¸Å´ÏÀú
-    /// 1. ÆË¾÷°ú ¹öÆ°À» ¸ÅÇÎ, ½ºÅÃÀ» »ç¿ëÇÏ¿© ÆË¾÷Ã¢ °ü¸®
-    /// 2. InputField °ü¸®
-    /// 3. Button °ü¸®
+    /// UI ì „ì²´ë¥¼ ê´€ë¦¬í•˜ëŠ” ë§¤ë‹ˆì €
+    /// 1. íŒì—…ê³¼ ë²„íŠ¼ì„ ë§¤í•‘, ìŠ¤íƒì„ ì‚¬ìš©í•˜ì—¬ íŒì—…ì°½ ê´€ë¦¬
+    /// 2. InputField ê´€ë¦¬
+    /// 3. Button ê´€ë¦¬
     /// </summary>
     public class UIManager : SingletonLazy<UIManager>
     {
         [HideInInspector]
         public Transform canvasTransform;
 
-        private Dictionary<string, UIPopUp> _popupUIDictionary = new();               // ÆË¾÷ ÀÌ¸§°ú UIPopUp °´Ã¼¸¦ ¸ÅÇÎÇÏ´Â Dictionary
-        private Dictionary<int, UIScene> _sceneUIDictionary = new();                  // °¢ ¾À ¹øÈ£¿¡ µû¶ó UISceneÀ» ÀúÀåÇÏ´Â Dictionary
-        private Dictionary<string, UIButton> _buttonPopupMapping = new();             // ¹öÆ°°ú ÆË¾÷ ÀÌ¸§À» ¸ÅÇÎÇÏ´Â Dictionary
-        private Dictionary<string, Action> _buttonActionMapping = new();              // ¹öÆ°°ú ÇØ´ç µ¿ÀÛÀ» ¸ÅÇÎÇÏ´Â Dictionary
-        private Dictionary<string, InputField> _inputFieldDictionary = new();         // InputField¸¦ ÀúÀåÇÒ Dictionary
-        private Dictionary<string, TextMeshProUGUI> _textDictionary = new();          // Text¸¦ ÀúÀåÇÒ Dictionary
-        private Stack<UIPopUp> _currentPopupUI = new();                               // ÇöÀç È°¼ºÈ­µÈ ÆË¾÷À» °ü¸®ÇÏ´Â ½ºÅÃ
-        private UIScene _currentSceneUI;                                              // ÇöÀç È°¼ºÈ­µÈ UIScene
-        private Dictionary<string, Type> _buttonPrefixToScriptMapping = new();        // Á¢µÎ»ç¿Í ½ºÅ©¸³Æ® Å¸ÀÔÀ» ¸ÅÇÎ(¹öÆ°)
+        private Dictionary<string, UIPopUp> _popupUIDictionary = new();               // íŒì—… ì´ë¦„ê³¼ UIPopUp ê°ì²´ë¥¼ ë§¤í•‘í•˜ëŠ” Dictionary
+        private Stack<UIPopUp> _currentPopupUI = new();                               // í˜„ì¬ í™œì„±í™”ëœ íŒì—…ì„ ê´€ë¦¬í•˜ëŠ” ìŠ¤íƒ
+
+        private Dictionary<string, UIButton> _buttonPopupMapping = new();             // ë²„íŠ¼ê³¼ íŒì—… ì´ë¦„ì„ ë§¤í•‘í•˜ëŠ” Dictionary
+        private Dictionary<string, TMP_InputField> _inputFieldDictionary = new();     // InputFieldë¥¼ ì €ì¥í•  Dictionary
+        private Dictionary<string, TextMeshProUGUI> _textDictionary = new();          // Textë¥¼ ì €ì¥í•  Dictionary
 
         /// <summary>
-        /// Äµ¹ö½º ÇÒ´ç, ÆË¾÷ Ã£±â ¹× µî·Ï, ¹öÆ°°ú ÆË¾÷ ¸ÅÇÎ, UI¿Í ¾À ¿¬°á
+        /// UI í˜¸ì¶œ
         /// </summary>
         private void Awake()
         {
-            Debug.Log("UIManager ½ÇÇà");
+            Debug.Log("UIManager ì‹¤í–‰");
 
             SetUpCanvas();
             SetUpUIPopUp();
+            SetUpText();
             SetUpInputField();
-            //SetUpText();
-            SetUpUIScene();
-            SetUpUIButtonComponent();
-            SetUpButtonPopupMapping();
-            SetUpButtonActionMapping();
+            SetupButtonMapping();
         }
 
         /// <summary>
-        /// ESC Å° ÀÔ·Â Ã³¸®
+        /// ESC í‚¤ ì…ë ¥ ì²˜ë¦¬
         /// </summary>
         private void Update()
         {
@@ -67,35 +54,36 @@ namespace SOF.Scripts.View
             }
         }
 
-        #region Awake Method
-
+        #region Canvas
         /// <summary>
-        /// Canvas ÇÒ´ç
+        /// Canvas í• ë‹¹
         /// </summary>
         private void SetUpCanvas()
         {
             canvasTransform = FindObjectOfType<Canvas>().transform;
 
             if (canvasTransform == null)
-                Debug.Log("Canvas ¾øÀ½");
+                Debug.Log("Canvas ì—†ìŒ");
             else
-                Debug.Log("¼º°øÀûÀ¸·Î ÇÒ´ç");
+                Debug.Log("ì„±ê³µì ìœ¼ë¡œ í• ë‹¹");
         }
+        #endregion
 
+        #region Mapping
         /// <summary>
-        /// ÆË¾÷ UI ¼³Á¤
+        /// íŒì—… UI ì„¤ì •
         /// </summary>
         private void SetUpUIPopUp()
         {
-            // "PopUps" ºÎ¸ğ Ã£±â
+            // "PopUps" ë¶€ëª¨ ì°¾ê¸°
             Transform popupsParent = canvasTransform.Find("PopUps");
             if (popupsParent == null)
             {
-                Debug.Log("ºÎ¸ğ PopUps GameObject¸¦ Ã£À» ¼ö ¾øÀ½");
+                Debug.Log("ë¶€ëª¨ PopUps GameObjectë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ");
                 return;
             }
 
-            // "PopUps" ºÎ¸ğ ¾Æ·¡ ¸ğµç ÀÚ½Ä °ÔÀÓ ¿ÀºêÁ§Æ® °Ë»ö
+            // "PopUps" ë¶€ëª¨ ì•„ë˜ ëª¨ë“  ìì‹ ê²Œì„ ì˜¤ë¸Œì íŠ¸ ê²€ìƒ‰
             foreach (Transform child in popupsParent.GetComponentsInChildren<Transform>(true))
             {
                 GameObject obj = child.gameObject;
@@ -110,250 +98,37 @@ namespace SOF.Scripts.View
                     if (popupComponent == null)
                     {
                         popupComponent = obj.AddComponent<UIPopUp>();
-                        Debug.Log($"UIPopUp ½ºÅ©¸³Æ®°¡ {popupName}¿¡ ÀÚµ¿À¸·Î Ãß°¡µÊ");
+                        Debug.Log($"UIPopUp ìŠ¤í¬ë¦½íŠ¸ê°€ {popupName}ì— ìë™ìœ¼ë¡œ ì¶”ê°€ë¨");
                     }
 
                     _popupUIDictionary.Add(popupName, popupComponent);
-                    Debug.Log($"{popupName} ÆË¾÷ÀÌ Dictionary¿¡ Ãß°¡µÊ");
+                    Debug.Log($"{popupName} íŒì—…ì´ Dictionaryì— ì¶”ê°€ë¨");
                 }
                         
             }
         }
 
         /// <summary>
-        /// InputField ¼³Á¤
+        /// ë²„íŠ¼ í´ë¦­ì‹œ íŒì—… í˜¸ì¶œ
         /// </summary>
-        private void SetUpInputField()
-        {
-            // InoutField¸¦ Ã£¾Æ¼­ Dictionary¿¡ µî·Ï ** UIScene ¿¬µ¿ ÈÄ µÇ´ÂÁö È®ÀÎÇØº¸±â
-            InputField[] uIInputFields = canvasTransform.GetComponentsInChildren<InputField>();
-
-            foreach (var field in uIInputFields)
-            {
-                Debug.Log($"UIInputField ¹ß°ß : {field.name}");
-                string fieldName = field.gameObject.name;
-                if (!_inputFieldDictionary.ContainsKey(fieldName))
-                {
-                    _inputFieldDictionary.Add(fieldName, field);
-                    Debug.Log($"InputField µî·ÏµÊ : {fieldName}");
-                }
-            }
-        }
-
-        ///// <summary>
-        ///// Text ¼³Á¤
-        ///// </summary>
-        //private void SetUpText()
-        //{
-        //    TextMeshProUGUI[] texts = canvasTransform.GetComponentsInChildren<TextMeshProUGUI>();
-
-        //    foreach (var text in texts)
-        //    {
-        //        Debug.Log($"UIText ¹ß°ß : {text.name}");
-        //        string fieldName = text.gameObject.name;
-        //        if (!_textDictionary.ContainsKey(fieldName))
-        //        {
-        //            _textDictionary.Add(fieldName, text);
-        //            Debug.Log($"Text µî·ÏµÊ : {fieldName}");
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Button¿¡ Custom ½ºÅ©¸³Æ® Ãß°¡
-        /// </summary>
-        private void SetUpUIButtonComponent()
-        {
-            SetUpButtonPrefixToScriptMapping();
-
-            Button[] buttons = canvasTransform.GetComponentsInChildren<Button>(true);
-
-            foreach (var button in buttons)
-            {
-                string buttonName = button.gameObject.name;
-                bool matched = false;
-
-                foreach (var prefix in _buttonPrefixToScriptMapping.Keys)
-                {
-                    if (buttonName.StartsWith(prefix))
-                    {
-                        Type scriptType = _buttonPrefixToScriptMapping[prefix];
-
-                        if (button.GetComponent(scriptType) == null)
-                        {
-                            button.gameObject.AddComponent(scriptType);
-                            Debug.Log($"{scriptType.Name}°¡ {buttonName}¿¡ ÇÒ´çµÊ");
-                        }
-
-                        matched = true;
-                        break;
-                    }
-                }
-
-                if (!matched)
-                {
-                    UIButton uIButton = button.GetComponent<UIButton>();
-                    if (uIButton == null)
-                    {
-                        uIButton = button.gameObject.AddComponent<UIButton>();
-                        Debug.Log($"UIButtonÀÌ {buttonName}¿¡ ÇÒ´çµÊ **{uIButton}");
-                    }
-                    else
-                    {
-                        Debug.LogError($"UIButtonÀº ÀÌ¹Ì {buttonName}¿¡ Á¸ÀçÇÔ");
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// ½ºÅ©¸³Æ® ÀÚµ¿ ¸ÅÇÎ(¹öÆ°)
-        /// </summary>
-        private void SetUpButtonPrefixToScriptMapping()
-        {
-            var buttonTypes = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => t.IsSubclassOf(typeof(UIButton)) && t != typeof(UIButton));
-
-            foreach (var type in buttonTypes)
-            {
-                string scriptName = type.Name;
-                if (scriptName.StartsWith("On") && scriptName.EndsWith("Button"))
-                {
-                    string prefix = scriptName.Substring(2, scriptName.Length - 2 - 6) + "_";
-
-                    if (prefix.StartsWith("Action_"))
-                    {
-                        if (!_buttonPrefixToScriptMapping.ContainsKey(prefix))
-                        {
-                            _buttonPrefixToScriptMapping.Add(prefix, type);
-                            Debug.Log($"¸ÅÇÎ Ãß°¡ : {prefix} -> {type.Name}");
-                        }
-                        else
-                            Debug.Log($"Á¢µÎ»ç {prefix}´Â ÀÌ¹Ì ¸ÅÇÎµÇ¾î ÀÖÀ½");
-                    }
-                }
-                else
-                    Debug.Log($"½ºÅ©¸³Æ® ¸í¸í ±ÔÄ¢À» µû¸£Áö ¾Ê¾ÒÀ½ -> {scriptName}");
-            }
-
-            foreach (var mapping in _buttonPrefixToScriptMapping)
-                Debug.Log($"¸ÅÇÎ : {mapping.Key} -> {mapping.Value.Name}");
-        }
-
-        /// <summary>
-        /// ¹öÆ°°ú ÆË¾÷ ¸ÅÇÎ
-        /// </summary>
-        private void SetUpButtonPopupMapping()
-        {
-            // ButtonÀ» Ã£¾Æ¼­ ÆË¾÷°ú ¸ÅÇÎ
-            UIButton[] uIButtons = canvasTransform.GetComponentsInChildren<UIButton>();
-
-            foreach (var button in uIButtons)
-            {
-                string popupName = button.gameObject.name;
-
-                if (popupName.StartsWith("PopUp_"))
-                    popupName = popupName.Replace("PopUp_", "");
-
-                popupName = popupName.Replace("Button", "PopUp");
-
-                Debug.Log($"¹öÆ° : {button.gameObject.name} -> ¸ÅÇÎµÈ ÆË¾÷ : {popupName}");
-                if (_popupUIDictionary.ContainsKey(popupName))
-                {
-                    _buttonPopupMapping.Add(popupName, button);
-                    button.SetPopupName(popupName);
-                    Debug.Log($"{popupName} ÆË¾÷À» {button.gameObject.name} ¹öÆ°¿¡ ¿¬°á");
-                }
-                else
-                    Debug.Log($"{popupName} <- ÇØ´ç ÆË¾÷À» Ã£À» ¼ö ¾øÀ½");
-            }
-        }
-
-        /// <summary>
-        /// ¹öÆ°°ú µ¿ÀÛ ¸ÅÇÎ
-        /// </summary>
-        private void SetUpButtonActionMapping()
-        {
-            string targetNamespace = "SOF.Scripts.View";
-            MonoBehaviour[] monoBehaviours = FindObjectsOfType<MonoBehaviour>()
-                .Where(m => m.GetType().Namespace == targetNamespace)
-                .ToArray();
-
-            foreach (var monoBehaviour in monoBehaviours)
-            {
-                Type type = monoBehaviour.GetType();
-                MethodInfo[] methods =type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-                foreach (var method in methods)
-                {
-                    if (method.Name.StartsWith("On") && method.Name.EndsWith("Click") && method.GetParameters().Length == 0)
-                    {
-                        string buttonName = method.Name.Substring(2, method.Name.Length - 2 - 5);
-                        if (!_buttonActionMapping.ContainsKey(buttonName))
-                        {
-                            Action action = () => method.Invoke(monoBehaviour, null);
-                            _buttonActionMapping.Add(buttonName, action);
-                            Debug.Log($"¸Ş¼­µå {method.Name}°¡ ¹öÆ° {buttonName}¿¡ ¿¬°áµÊ");
-                        }
-                        else
-                            Debug.Log($"¹öÆ° {buttonName}ÀÌ ÀÌ¹Ì ¿¬°áµÊ.");
-
-                    }
-                }
-            }
-
-            // Button°ú ÇØ´ç µ¿ÀÛÀ» ¸ÅÇÎ
-            UIButton[] uIButtonActions = canvasTransform.GetComponentsInChildren<UIButton>();
-
-            foreach (var button in uIButtonActions)
-            {
-                string buttonName = button.gameObject.name;
-
-                if (_buttonActionMapping.ContainsKey(buttonName))
-                {
-                    button.SetButtonAction(_buttonActionMapping[buttonName]);
-                    Debug.Log($"{buttonName} ¹öÆ°¿¡ µ¿ÀÛÀÌ µî·ÏµÇ¾ú½À´Ï´Ù.");
-                }
-                else
-                    Debug.Log($"{buttonName}¿¡ ´ëÇÑ µ¿ÀÛÀÌ µî·ÏµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
-            }
-        }
-
-        /// <summary>
-        /// UIScene°ú ¾À ¿¬°á
-        /// </summary>
-        /// <param name="sceneNumber"></param>
-        private void SetUpUIScene()
-        {
-            UIScene[] uIScenes = canvasTransform.GetComponentsInChildren<UIScene>(true);
-            for (int i = 0; i < uIScenes.Length; i++)
-            {
-                _sceneUIDictionary[i] = uIScenes[i];
-            }
-        }
-        #endregion
-
-        /// <summary>
-        /// ¹öÆ° Å¬¸¯½Ã ÆË¾÷ È£Ãâ
-        /// </summary>
-        /// <param name="popUpName"> ÆË¾÷ ÀÌ¸§ </param>
+        /// <param name="popUpName"> íŒì—… ì´ë¦„ </param>
         public void ShowPopUp(string popUpName)
         {
             if (_popupUIDictionary.TryGetValue(popUpName, out UIPopUp popUp))
             {
                 if (!popUp.IsActive())
                 {
-                    Debug.Log($"ShowPopUp È£Ãâ : {popUpName}");
+                    Debug.Log($"ShowPopUp í˜¸ì¶œ : {popUpName}");
                     popUp.ShowPanel();
                     _currentPopupUI.Push(popUp);
                 }
             }
             else
-                Debug.LogWarning($"{popUpName} <- ÇØ´ç ÀÌ¸§ÀÇ ÆË¾÷UI¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+                Debug.LogWarning($"{popUpName} <- í•´ë‹¹ ì´ë¦„ì˜ íŒì—…UIë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
 
         /// <summary>
-        /// °¡Àå ÃÖ±Ù¿¡ ¿­¸° ÆË¾÷À» ´İÀ½
+        /// ê°€ì¥ ìµœê·¼ì— ì—´ë¦° íŒì—…ì„ ë‹«ìŒ
         /// </summary>
         public void HidePopUp()
         {
@@ -365,80 +140,148 @@ namespace SOF.Scripts.View
         }
 
         /// <summary>
-        /// ½ºÅÃ¿¡ ÀÖ´Â ¸ğµç ÆË¾÷À» ´İÀ½
+        /// íŒì—…ê³¼ ìŠ¤í¬ë¦½íŠ¸ë¥¼ ë²„íŠ¼ì— ë§¤í•‘
         /// </summary>
-        public void HideAllPopUp()
+        private void SetupButtonMapping()
         {
-            if (_currentPopupUI.Count <= 0)
-                return;
-
-            var popUpStackCopy = new Stack<UIPopUp>(_currentPopupUI);
-
-            foreach (var popUp in popUpStackCopy)
+            Button[] buttons = canvasTransform.GetComponentsInChildren<Button>(true);
+            Debug.Log($"{buttons.Length} buttons");
+            
+            foreach (var button in buttons)
             {
-                _currentPopupUI.TryPop(out _);
-                popUp.HidePanel();
+                Debug.Log("ìŠ¤í¬ë¦½íŠ¸ ë§¤í•‘ í™œì„±í™”");
+                GameObject buttonObject = button.gameObject;
+                string buttonName = buttonObject.name;
+
+                UIButton uIButton = buttonObject.GetComponent<UIButton>();
+                if (uIButton == null)
+                {
+                    string scriptName = $"{buttonName}Script";
+                    string fullScriptName = $"SOF.Scripts.View.{scriptName}";
+                    Type scriptType = null;
+
+                    foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        scriptType = assembly.GetType(fullScriptName);
+                        if (scriptType != null)
+                            break;
+                    }
+
+                    if (scriptType != null && scriptType.IsSubclassOf(typeof(UIButton)))
+                    {
+                        uIButton = (UIButton)buttonObject.AddComponent(scriptType);
+                        Debug.Log($"{scriptName} ì»´í¬ë„ŒíŠ¸ê°€ {buttonName}ì— ì¶”ê°€ë¨");
+                    }
+                    else
+                    {
+                        uIButton = buttonObject.AddComponent<UIButton>();
+                        Debug.Log($"UIButton ì»´í¬ë„ŒíŠ¸ê°€ {buttonName}ì— ì¶”ê°€ë¨");
+                    }
+                }
+
+                string popupName = buttonName.Replace("Button", "PopUp");
+                if (_popupUIDictionary.ContainsKey(popupName))
+                {
+                    uIButton.SetPopupName(popupName);
+                    Debug.Log($"{buttonName}ì— {popupName}ì´ ë§¤í•‘ë¨");
+                }
+                else
+                    Debug.Log($"{popupName}ì„ ì°¾ì„ ìˆ˜ ì—†ìŒ");
             }
+        }
+        #endregion
+
+        #region InputField
+        /// <summary>
+        /// InputField ì„¤ì •
+        /// </summary>
+        private void SetUpInputField()
+        {
+            // InoutFieldë¥¼ ì°¾ì•„ì„œ Dictionaryì— ë“±ë¡ ** UIScene ì—°ë™ í›„ ë˜ëŠ”ì§€ í™•ì¸í•´ë³´ê¸°
+            TMP_InputField[] uIInputFields = canvasTransform.GetComponentsInChildren<TMP_InputField>(true);
+
+            foreach (var field in uIInputFields)
+            {
+                Debug.Log($"UIInputField ë°œê²¬ : {field.name}");
+                string fieldName = field.gameObject.name;
+                if (!_inputFieldDictionary.ContainsKey(fieldName))
+                {
+                    _inputFieldDictionary.Add(fieldName, field);
+                    Debug.Log($"InputField ë“±ë¡ë¨ : {fieldName}");
+                }
+            }
+            Debug.Log($"ì¸í’‹í•„ë“œ : {uIInputFields.Length}");
         }
 
         /// <summary>
-        /// InputFieldÀÇ ÅØ½ºÆ® °ª °¡Á®¿À±â
+        /// InputFieldì˜ í…ìŠ¤íŠ¸ ê°’ ê°€ì ¸ì˜¤ê¸°
         /// </summary>
-        /// <param name="fieldName"> InputField ÀÌ¸§ </param>
+        /// <param name="fieldName"> InputField ì´ë¦„ </param>
         /// <returns> inputfield.text </returns>
         public string GetInputFieldValue(string fieldName)
         {
-            if (_inputFieldDictionary.TryGetValue(fieldName, out InputField inputfield))
+            if (_inputFieldDictionary.TryGetValue(fieldName, out TMP_InputField inputfield))
             {
                 return inputfield.text;
             }
-            Debug.Log($"{fieldName} ÇÊµå¸¦ Ã£À» ¼ö ¾øÀ½");
+            Debug.Log($"{fieldName} í•„ë“œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ");
             return string.Empty;
         }
 
         /// <summary>
-        /// InputFieldÀÇ °ªÀ» ¼³Á¤
+        /// InputFieldì˜ ê°’ì„ ì„¤ì •
         /// </summary>
-        /// <param name="fieldName"> InputField ÀÌ¸§ </param>
-        /// <param name="value"> °ª </param>
+        /// <param name="fieldName"> InputField ì´ë¦„ </param>
+        /// <param name="value"> ê°’ </param>
         public void SetInputFieldValue(string fieldName, string value)
         {
-            if (_inputFieldDictionary.TryGetValue(fieldName, out InputField inputfield))
+            if (_inputFieldDictionary.TryGetValue(fieldName, out TMP_InputField inputfield))
                 inputfield.text = value;
             else
-                Debug.Log($"{fieldName} ÇÊµå¸¦ Ã£À» ¼ö ¾øÀ½");
+                Debug.Log($"{fieldName} í•„ë“œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ");
+        }
+        #endregion
+
+        #region Text
+        /// <summary>
+        /// Text ì„¤ì •
+        /// </summary>
+        private void SetUpText()
+        {
+            Transform textsParent = canvasTransform.Find("Texts");
+
+            if (textsParent == null)
+            {
+                Debug.Log("Texts ê·¸ë£¹ì„ ì°¾ì„ ìˆ˜ ì—†ìŒ");
+                return;
+            }
+
+            TextMeshProUGUI[] texts = textsParent.GetComponentsInChildren<TextMeshProUGUI>();
+
+            foreach (var text in texts)
+            {
+                Debug.Log($"UIText ë°œê²¬ : {text.name}");
+                string fieldName = text.gameObject.name;
+                if (!_textDictionary.ContainsKey(fieldName))
+                {
+                    _textDictionary.Add(fieldName, text);
+                    Debug.Log($"Text ë“±ë¡ë¨ : {fieldName}");
+                }
+            }
         }
 
         /// <summary>
-        /// TextÀÇ °ªÀ» ¼³Á¤
+        /// Textì˜ ê°’ì„ ì„¤ì •
         /// </summary>
-        /// <param name="fieldName"> Text ÀÌ¸§ </param>
-        /// <param name="value"> °ª </param>
+        /// <param name="fieldName"> Text ì´ë¦„ </param>
+        /// <param name="value"> ê°’ </param>
         public void SetTextValue(string fieldName, string value)
         {
             if (_textDictionary.TryGetValue(fieldName, out TextMeshProUGUI text))
                 text.text = value;
             else
-                Debug.Log($"{fieldName} Text¸¦ Ã£À» ¼ö ¾øÀ½");
+                Debug.Log($"{fieldName} Textë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ");
         }
-
-        /// <summary>
-        /// ¾À ·ÎµåµÉ ¶§ UI È£Ãâ
-        /// </summary>
-        /// <param name="sceneNumber"> ¾À ¹øÈ£ </param>
-        public void LoadSceneUI(int sceneNumber)
-        {
-            if (_currentSceneUI != null)
-                _currentSceneUI.HideUI();
-
-            if (_sceneUIDictionary.TryGetValue(sceneNumber, out UIScene newSceneUI))
-            {
-                newSceneUI.ShowUI();
-                _currentSceneUI = newSceneUI;
-                Debug.Log($"¾À {sceneNumber}¿¡ ¸Â´Â UI¸¦ ·ÎµåÇÔ");
-            }
-            else
-                Debug.Log($"¾À {sceneNumber}¿¡ ¸Â´Â UISceneÀ» Ã£À» ¼ö ¾øÀ½");
-        }
+        #endregion
     }
 }

@@ -1,16 +1,26 @@
 using SOF.Scripts.Presenter.UGS;
+using UnityEngine;
 
 namespace SOF.Scripts.View
 {
-    public class OnSignInButton : UIButton
+    public class SignInButtonScript : UIButton
     {
+        protected override void OnButtonClick()
+        {
+            base.OnButtonClick();
+
+            OnSignInButtonClick();
+        }
+
         public async void OnSignInButtonClick()
         {
-            string id = UIManager.Instance.GetInputFieldValue("ID_InputField");
+            string user = UIManager.Instance.GetInputFieldValue("ID_InputField");
+            Debug.Log($"{user}");
             string password = UIManager.Instance.GetInputFieldValue("Password_InputField");
+            Debug.Log($"{password}");
 
             #region 입력값 예외 처리
-            if (string.IsNullOrEmpty(id))                                                    // 아이디 빈칸
+            if (string.IsNullOrEmpty(user))                                                    // 아이디 빈칸
             {
                 UIManager.Instance.SetTextValue("ErrorText", "이메일을 입력해주세요.");
                 return;
@@ -23,7 +33,9 @@ namespace SOF.Scripts.View
             }
             #endregion
 
-            await Authentication.Instance.SignInUser(id, password);
+            await Authentication.Instance.SignInUser(user, password);
+
+            Debug.Log($"로그인 완료 : {user}");
         }
     }
 }
